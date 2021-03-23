@@ -49,7 +49,6 @@ def edit_menu(request, pk):
             )
         menu.items = request.POST.get('items', '')
         menu.save()
-
     return render(request, 'menu/change_menu.html', {
             'menu': menu,
             'items': items,
