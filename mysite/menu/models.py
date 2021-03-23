@@ -1,5 +1,3 @@
-import datetime
-
 from django.db import models
 from django.utils import timezone
 
@@ -10,7 +8,7 @@ class Menu(models.Model):
     created_date = models.DateTimeField(
             default=timezone.now)
     expiration_date = models.DateTimeField(
-            blank=True, default=datetime.datetime.now())
+            blank=True, null=True)
 
     def __str__(self):
         return self.season
@@ -18,7 +16,7 @@ class Menu(models.Model):
 class Item(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
-    chef = models.ForeignKey('auth.User')
+    chef = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     created_date = models.DateTimeField(
             default=timezone.now)
     standard = models.BooleanField(default=False)
