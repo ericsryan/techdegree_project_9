@@ -10,9 +10,10 @@ from . import forms
 from . import models
 
 
-def menu_list(request):
+def current_menu_list(request):
+    """Display a list of current menus."""
     menus = models.Menu.objects.filter(expiration_date__gte=timezone.now()).order_by('-expiration_date')
-    return render(request, 'menu/list_all_current_menus.html', {'menus': menus})
+    return render(request, 'menu/current_menus.html', {'menus': menus})
 
 
 def menu_detail(request, pk):
@@ -21,11 +22,11 @@ def menu_detail(request, pk):
 
 
 def item_detail(request, pk):
-    item = models.Item.objects.get_object_or_404(pk=pk)
-    return render(request, 'menu/detail_item.html', {'item': item})
+    item = models.Item.objects.get(pk=pk)
+    return render(request, 'menu/item_detail.html', {'item': item})
 
 
-def create_new_menu(request):
+def create_menu(request):
     if request.method == "POST":
         form = forms.MenuForm(request.POST)
         if form.is_valid():
@@ -35,7 +36,7 @@ def create_new_menu(request):
             return redirect('menu_detail', pk=menu.pk)
     else:
         form = forms.MenuForm()
-    return render(request, 'menu/menu_edit.html', {'form': form})
+    return render(request, 'menu/create_menu.html', {'form': form})
 
 
 def edit_menu(request, pk):
@@ -49,7 +50,7 @@ def edit_menu(request, pk):
             )
         menu.items = request.POST.get('items', '')
         menu.save()
-    return render(request, 'menu/change_menu.html', {
+    return render(request, 'menu/edit_menu.html', {
             'menu': menu,
             'items': items,
         })
