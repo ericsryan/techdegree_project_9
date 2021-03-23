@@ -1,8 +1,9 @@
 import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from operator import attrgetter
 
@@ -27,11 +28,11 @@ def item_detail(request, pk):
 
 
 def create_menu(request):
+    """Create a new menu"""
+    form = forms.MenuForm()
     if request.method == "POST":
-        form = forms.MenuForm(request.POST)
+        form = forms.MenuForm(data=request.POST)
         if form.is_valid():
-            menu = form.save(commit=False)
-            menu.created_date = timezone.now()
             menu.save()
             return redirect('menu_detail', pk=menu.pk)
     else:
@@ -40,17 +41,22 @@ def create_menu(request):
 
 
 def edit_menu(request, pk):
-    menu = get_object_or_404(models.Menu, pk=pk)
+    """Edit a menu"""
+    menu = models.Menu.objects.get(pk=pk)
     items = models.Item.objects.all()
     if request.method == "POST":
-        menu.season = request.POST.get('season', '')
-        menu.expiration_date = datetime.datetime.strptime(
-            request.POST.get('expiration_date', ''),
-            '%m/%d/%Y'
-            )
-        menu.items = request.POST.get('items', '')
-        menu.save()
+        form = forms.MenuForm(
+            request.POST,
+            instance=menu
+        )
+        form.save()
+        return HttpResponseRedirect(reverse('menu_detail', args=[menu.pk]))
+    else:
+        form = forms.MenuForm(
+            instance=menu
+        )
     return render(request, 'menu/edit_menu.html', {
+            'form': form,
             'menu': menu,
             'items': items,
         })
