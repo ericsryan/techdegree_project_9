@@ -18,11 +18,13 @@ def current_menu_list(request):
 
 
 def menu_detail(request, pk):
+    """Display the detailes of a menu"""
     menu = models.Menu.objects.get(pk=pk)
     return render(request, 'menu/menu_detail.html', {'menu': menu})
 
 
 def item_detail(request, pk):
+    """Display the details of an item"""
     item = models.Item.objects.get(pk=pk)
     return render(request, 'menu/item_detail.html', {'item': item})
 
