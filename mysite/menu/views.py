@@ -1,12 +1,82 @@
 import datetime
 
-
+from django.contrib import messages
+from django.contrib.auth import (authenticate, login, logout,
+                                 update_session_auth_hash)
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.utils import timezone
 
 from . import forms
 from . import models
+
+
+def sign_in(request):
+    """Process the user login request"""
+    form = AuthenticationForm
+    if request.method == 'POST':
+        form = AuthenticationForm(data=request.POST)
+        if form.is_valid():
+            if form.user_cache is not None:
+                user = form.user_cache
+                if user.is_active:
+                    login(request, user)
+                    messages.success(
+                        request,
+                        f"You are now logged in as {user.username}"
+                    )
+                    return HttpResponseRedirect(reverse('current_menu_list'))
+                else:
+                    messages.error(
+                        request,
+                        "That user account has been disabled"
+                    )
+            else:
+                message.error(
+                    request,
+                    "The username or password is incorrect"
+                )
+    return render(
+        request,
+        'menu/login.html',
+        {'form': form, 'login_page': 'active'}
+    )
+
+
+def register(request):
+    """Create new user account"""
+    form = forms.UserRegisterForm()
+    if request.method == 'POST':
+        form = forms.UserRegisterForm(data=request.POST)
+        if form.is_valid():
+            form.save()
+            user = authenticate(
+                username = form.cleaned_data['username'],
+                email = form.cleaned_data['email'],
+                password = form.cleaned_data['password1'],
+            )
+            login(request, user)
+            messages.success(
+                request,
+                "You have successfully created a new acount and are " +
+                f"now logged in as {user.username}"
+            )
+            return HttpResponseRedirect(reverse('current_menu_list'))
+    return render(
+        request,
+        'menu/register.html',
+        {'form': form, 'registration_page': 'active'}
+    )
+
+
+def sign_out(request):
+    """Log the user out of the site"""
+    logout(request)
+    messages.success(request, "You've been logged out. Come back soon!")
+    return HttpResponseRedirect(reverse('current_menu_list'))
 
 
 def current_menu_list(request):

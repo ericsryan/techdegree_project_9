@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <div class="container my-4">
+    <form method="POST" action="{% url 'login' %}">
+      <div class="form-group">
+        {% csrf_token %}
+        {{ form }}
+      </div>
+      <button class="btn btn-dark" type="submit">Login</button>
+    </form>
+  </div>
+{% endblock %}

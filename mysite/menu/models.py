@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 
@@ -5,6 +6,7 @@ from django.utils import timezone
 class Menu(models.Model):
     season = models.CharField(max_length=20)
     items = models.ManyToManyField('Item', related_name='items')
+    creator = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField(
             default=timezone.now)
     expiration_date = models.DateTimeField(
