@@ -39,6 +39,10 @@ class UserRegisterForm(UserCreationForm):
 
 
 class MenuForm(forms.ModelForm):
+    items = forms.ModelMultipleChoiceField(
+        queryset=models.Item.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
 
     class Meta:
         model = models.Menu

@@ -1,12 +1,14 @@
 {% extends 'layout.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %}Register{% endblock %}
 
 {% block content %}
 <div class="container my-4">
   <form method="POST">
     {% csrf_token %}
-    {{ form }}
+    {{ form|crispy }}
     <button id="saveBtn" class="btn btn-dark" type="submit">Register</button>
   </form>
 </div>

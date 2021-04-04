@@ -5,7 +5,7 @@ from django.contrib.auth import (authenticate, login, logout,
                                  update_session_auth_hash)
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
@@ -91,7 +91,12 @@ def current_menu_list(request):
 
 def menu_detail(request, pk):
     """Display the detailes of a menu"""
-    menu = get_object_or_404(models.Menu, pk=pk)
+    try:
+        menu = models.Menu.objects.prefetch_related(
+            'items'
+        ).get(pk=pk)
+    except models.Menu.DoesNotExist:
+        raise Http404
     return render(request,
                   'menu/menu_detail.html',
                   {'menu': menu})
@@ -99,7 +104,12 @@ def menu_detail(request, pk):
 
 def item_detail(request, pk):
     """Display the details of an item"""
-    item = get_object_or_404(models.Item, pk=pk)
+    try:
+        item = models.Item.objects.prefetch_related(
+            'ingredients'
+        ).get(pk=pk)
+    except models.Item.DoesNotExist:
+        raise Http404
     return render(request,
                   'menu/item_detail.html',
                   {'item': item})
@@ -111,7 +121,10 @@ def create_menu(request):
     if request.method == "POST":
         form = forms.MenuForm(data=request.POST)
         if form.is_valid():
-            new_menu = form.save()
+            new_menu = form.save(commit=False)
+            new_menu.creator = request.user
+            new_menu.save()
+            form.save_m2m()
             return HttpResponseRedirect(
                 reverse('menu_detail', args=[new_menu.pk])
             )
@@ -132,6 +145,7 @@ def edit_menu(request, pk):
             instance=menu
         )
         form.save()
+        form.save_m2m()
         return HttpResponseRedirect(reverse('menu_detail', args=[menu.pk]))
     else:
         form = forms.MenuForm(

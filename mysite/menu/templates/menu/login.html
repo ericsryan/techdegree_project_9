@@ -1,5 +1,7 @@
 {% extends 'layout.html' %}
 
+{% load crispy_forms_tags %}
+
 {% block title %}Login{% endblock %}
 
 {% block content %}
@@ -7,7 +9,7 @@
     <form method="POST" action="{% url 'login' %}">
       <div class="form-group">
         {% csrf_token %}
-        {{ form }}
+        {{ form|crispy }}
       </div>
       <button class="btn btn-dark" type="submit">Login</button>
     </form>
