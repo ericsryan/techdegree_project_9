@@ -4,7 +4,7 @@
   <div class="post">
       {% for menu in menus %}
           <h1>
-              {% if user.is_authenticated %}
+              {% if user == menu.creator %}
                   <a class="btn btn-default" href="{% url 'menu_edit' pk=menu.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
               {% endif %}
               <a href="{% url 'menu_detail' pk=menu.pk %}">{{ menu.season }}</a>

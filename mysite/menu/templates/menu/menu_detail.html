@@ -3,7 +3,7 @@
 {% block content %}
   <div class="post">
       <h1>
-          {% if user.is_authenticated %}
+          {% if user == menu.creator %}
               <a class="btn btn-default" href="{% url 'menu_edit' pk=menu.pk %}"><span class="glyphicon glyphicon-pencil"></span></a>
           {% endif %}
           {{ menu.season }}
@@ -16,7 +16,7 @@
       </ul>
       {% if menu.expiration_date %}
           <div class="date">
-              Menu expires on {{ menu.expiration_date|date:"F j, Y" }}
+              Menu expires on {{ menu.expiration_date }}
           </div>
       {% endif %}
   </div>
