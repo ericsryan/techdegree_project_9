@@ -21,12 +21,14 @@ from django.contrib import admin
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path, include
 
+from . import views
+
 urlpatterns = [
+    path('', views.index, name='index'),
     path('admin/', admin.site.urls),
-    path('', include('menu.urls')),
+    path('menu/', include('menu.urls', namespace='menu')),
     path('__debug__/', include(debug_toolbar.urls))
 ]
-
 urlpatterns += staticfiles_urlpatterns()
 
 if settings.DEBUG:

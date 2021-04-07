@@ -28,7 +28,7 @@ def sign_in(request):
                         request,
                         f"You are now logged in as {user.username}"
                     )
-                    return HttpResponseRedirect(reverse('current_menu_list'))
+                    return HttpResponseRedirect(reverse('index'))
                 else:
                     messages.error(
                         request,
@@ -64,7 +64,7 @@ def register(request):
                 "You have successfully created a new acount and are " +
                 f"now logged in as {user.username}"
             )
-            return HttpResponseRedirect(reverse('current_menu_list'))
+            return HttpResponseRedirect(reverse('index'))
     return render(
         request,
         'menu/register.html',
@@ -76,17 +76,7 @@ def sign_out(request):
     """Log the user out of the site"""
     logout(request)
     messages.success(request, "You've been logged out. Come back soon!")
-    return HttpResponseRedirect(reverse('current_menu_list'))
-
-
-def current_menu_list(request):
-    """Display a list of current menus."""
-    menus = models.Menu.objects.filter(
-        expiration_date__gte=timezone.now()
-    ).order_by('-expiration_date')
-    return render(request,
-                  'menu/current_menus.html',
-                  {'menus': menus})
+    return HttpResponseRedirect(reverse('index'))
 
 
 def menu_detail(request, pk):
@@ -115,6 +105,7 @@ def item_detail(request, pk):
                   {'item': item})
 
 
+@login_required
 def create_menu(request):
     """Create a new menu"""
     form = forms.MenuForm()
@@ -127,7 +118,7 @@ def create_menu(request):
             new_menu.save()
             form.save_m2m()
             return HttpResponseRedirect(
-                reverse('menu_detail', args=[new_menu.pk])
+                reverse('menu:menu_detail', args=[new_menu.pk])
             )
     else:
         form = forms.MenuForm()
@@ -136,6 +127,7 @@ def create_menu(request):
                   {'form': form})
 
 
+@login_required
 def edit_menu(request, pk):
     """Edit a menu"""
     menu = models.Menu.objects.get(pk=pk)
@@ -149,7 +141,7 @@ def edit_menu(request, pk):
             form.save(commit=False)
             menu.season = '{} {}'.format(form.cleaned_data.get('season'), form.cleaned_data.get('year'))
             form.save()
-            return HttpResponseRedirect(reverse('menu_detail', args=[menu.pk]))
+            return HttpResponseRedirect(reverse('menu:menu_detail', args=[menu.pk]))
     else:
         form = forms.MenuForm(
             instance=menu

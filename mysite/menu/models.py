@@ -9,8 +9,7 @@ class Menu(models.Model):
     creator = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     created_date = models.DateField(
             default=timezone.now)
-    expiration_date = models.DateField(
-            blank=True, null=True)
+    expiration_date = models.DateField()
 
 
     def __str__(self):

@@ -112,3 +112,5 @@ INTERNAL_IPS = {
 }
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+LOGIN_URL = '/menu/login/'
