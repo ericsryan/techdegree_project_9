@@ -133,6 +133,8 @@ def edit_menu(request, pk):
     """Edit a menu"""
     menu = models.Menu.objects.get(pk=pk)
     items = models.Item.objects.all()
+    if menu.creator != request.user:
+        raise Http404
     if request.method == "POST":
         form = forms.MenuForm(
             request.POST,
