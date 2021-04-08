@@ -68,7 +68,7 @@ def register(request):
     return render(
         request,
         'menu/register.html',
-        {'form': form, 'registration_page': 'active'}
+        {'form': form}
     )
 
 
@@ -114,7 +114,8 @@ def create_menu(request):
         if form.is_valid():
             new_menu = form.save(commit=False)
             new_menu.creator = request.user
-            new_menu.season = '{} {}'.format(form.cleaned_data.get('season'), form.cleaned_data.get('year'))
+            new_menu.season = '{} {}'.format(form.cleaned_data.get('season'),
+                                             form.cleaned_data.get('year'))
             new_menu.save()
             form.save_m2m()
             return HttpResponseRedirect(
@@ -139,9 +140,11 @@ def edit_menu(request, pk):
         )
         if form.is_valid():
             form.save(commit=False)
-            menu.season = '{} {}'.format(form.cleaned_data.get('season'), form.cleaned_data.get('year'))
+            menu.season = '{} {}'.format(form.cleaned_data.get('season'),
+                                         form.cleaned_data.get('year'))
             form.save()
-            return HttpResponseRedirect(reverse('menu:menu_detail', args=[menu.pk]))
+            return HttpResponseRedirect(reverse('menu:menu_detail',
+                                                args=[menu.pk]))
     else:
         form = forms.MenuForm(
             instance=menu

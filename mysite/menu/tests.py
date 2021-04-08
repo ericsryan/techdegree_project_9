@@ -76,9 +76,33 @@ class MenuModelsTests(TestCase):
         menu = models.Menu.objects.get(id=1)
         item = models.Item.objects.get(id=1)
         self.assertEqual(menu.items.count(), 1)
-        self.assertNotEqual(menu.items.count(), 0)
         self.assertEqual(item.ingredients.count(), 1)
-        self.assertNotEqual(item.ingredients.count(), 0)
+
+
+class MenuFormsTests(TestCase):
+    def test_user_registrater_form(self):
+        form = forms.UserRegisterForm(data=
+            {
+                'username': 'orion2',
+                'email': 'test@test.com',
+                'verify_email': 'test@test.com',
+                'password1': 'password',
+                'password2': 'password'
+            }
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_user_registration_form_email_verification_clean_method(self):
+        form = forms.UserRegisterForm(data=
+            {
+                'username': 'orion2',
+                'email': 'test@test.com',
+                'verify_email': 'test2@test.com',
+                'password1': 'password',
+                'password2': 'password'
+            }
+        )
+        self.assertFalse(form.is_valid())
 
 
 class MenuViewsTests(TestCase):
@@ -105,9 +129,17 @@ class MenuViewsTests(TestCase):
         )
         self.menu.items.add(self.item)
 
+    def test_index(self):
+        """Test for the index view"""
+        resp = self.client.get(reverse('index'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTemplateUsed(resp, 'layout.html')
+        self.assertTemplateUsed(resp, 'index.html')
+        self.assertEqual(resp.context['menus'].count(), 1)
+
     def test_sign_in_view(self):
         """Test for the sign-in view"""
-        resp = self.client.get(reverse('login'))
+        resp = self.client.get(reverse('menu:login'))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'layout.html')
         self.assertTemplateUsed(resp, 'menu/login.html')
@@ -115,7 +147,7 @@ class MenuViewsTests(TestCase):
     def test_sign_in_post_view(self):
         """Test a POST to the sign in view"""
         resp = self.client.post(
-            reverse('login'),
+            reverse('menu:login'),
             {
                 'username': 'orion',
                 'password': 'password'
@@ -125,7 +157,7 @@ class MenuViewsTests(TestCase):
 
     def test_register_view(self):
         """Test for the register view"""
-        resp = self.client.get(reverse('register'))
+        resp = self.client.get(reverse('menu:register'))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'layout.html')
         self.assertTemplateUsed(resp, 'menu/register.html')
@@ -133,7 +165,7 @@ class MenuViewsTests(TestCase):
     def test_register_post_view(self):
         """Test a POST to the register view"""
         resp = self.client.post(
-            reverse('register'),
+            reverse('menu:register'),
             {
                 'username': 'orion2',
                 'email': 'test@test.com',
@@ -145,35 +177,35 @@ class MenuViewsTests(TestCase):
         self.assertEqual(resp.status_code, 302)
 
     def test_sign_out_view(self):
-        resp = self.client.get(reverse('logout'))
+        resp = self.client.get(reverse('menu:logout'))
         self.assertEqual(resp.status_code, 302)
-
-    def test_current_menu_list(self):
-        """Test for the current menu list view"""
-        resp = self.client.get(reverse('current_menu_list'))
-        self.assertEqual(resp.status_code, 200)
-        self.assertTemplateUsed(resp, 'layout.html')
-        self.assertTemplateUsed(resp, 'menu/current_menus.html')
-        self.assertEqual(resp.context['menus'].count(), 1)
 
     def test_menu_detail_view(self):
         """Test for the menu detail view"""
-        resp = self.client.get(reverse('menu_detail', args=[1]))
+        resp = self.client.get(reverse('menu:menu_detail', args=[1]))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'layout.html')
         self.assertTemplateUsed(resp, 'menu/menu_detail.html')
 
+    def test_menu_detail_404(self):
+        resp = self.client.get(reverse('menu:menu_detail', args=[2]))
+        self.assertEqual(resp.status_code, 404)
+
     def test_item_detail_view(self):
         """Test for the item detail view"""
-        resp = self.client.get(reverse('item_detail', args=[1]))
+        resp = self.client.get(reverse('menu:item_detail', args=[1]))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'layout.html')
         self.assertTemplateUsed(resp, 'menu/item_detail.html')
 
+    def test_item_detail_404(self):
+        resp = self.client.get(reverse('menu:item_detail', args=[2]))
+        self.assertEqual(resp.status_code, 404)
+
     def test_create_menu_view(self):
         """Test for the create menu view"""
         self.client.force_login(self.user)
-        resp = self.client.get(reverse('create_menu'))
+        resp = self.client.get(reverse('menu:create_menu'))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'layout.html')
         self.assertTemplateUsed(resp, 'menu/create_menu.html')
@@ -182,13 +214,13 @@ class MenuViewsTests(TestCase):
         """Test a POST to the create menu view"""
         self.client.force_login(self.user)
         resp = self.client.post(
-            reverse('create_menu'),
+            reverse('menu:create_menu'),
             {
                 'season': 'Spring',
                 'year': '2021',
                 'items': '1',
                 'expiration_date': datetime.date.today() +
-                                   datetime.timedelta(days=1),
+                                   datetime.timedelta(days=1)
             }, follow=True
         )
         self.assertContains(resp, "Spring 2021")
@@ -196,7 +228,7 @@ class MenuViewsTests(TestCase):
     def test_edit_menu_view(self):
         """Test for the edit menu view"""
         self.client.force_login(self.user)
-        resp = self.client.get(reverse('edit_menu', args=[1]))
+        resp = self.client.get(reverse('menu:edit_menu', args=[1]))
         self.assertEqual(resp.status_code, 200)
         self.assertTemplateUsed(resp, 'layout.html')
         self.assertTemplateUsed(resp, 'menu/edit_menu.html')
@@ -205,13 +237,13 @@ class MenuViewsTests(TestCase):
         """Test a POST to the edit menu view"""
         self.client.force_login(self.user)
         resp = self.client.post(
-            reverse('edit_menu', args=[1]),
+            reverse('menu:edit_menu', args=[1]),
             {
                 'season': 'Fall',
                 'year': '2021',
                 'items': '1',
                 'expiration_date': datetime.date.today() +
-                                   datetime.timedelta(days=1),
+                                   datetime.timedelta(days=1)
             }, follow=True
         )
         self.assertEqual(resp.status_code, 200)
